@@ -142,6 +142,19 @@ def upload_preview(job_id: str, local_path: Path) -> str:
         return json.loads(resp.read())["url"]
 
 
+# Account house style for hook_text (the on-screen title). Keep in sync with the account
+# descriptions in creator-dashboard's src/lib/accounts.ts. hook_text should read differently
+# every time but always follow this same direction for a given account.
+ACCOUNT_STYLE_HINTS = {
+    "triphunters": (
+        "Always POV-style: write hook_text as a first-person POV title card (e.g. starting "
+        "with 'POV:' or an equivalent first-person framing), as if the viewer is the one "
+        "experiencing this moment. Vary the exact wording every time, but always keep this "
+        "same POV framing and tone - never a third-person description or a generic caption."
+    ),
+}
+
+
 def process_path_a(job: dict, source_url: str, brief_text: str) -> None:
     from make_viral_clips import run as make_viral_clips_run
 
@@ -149,7 +162,10 @@ def process_path_a(job: dict, source_url: str, brief_text: str) -> None:
     patch_job(job["id"], {"status": "generating", "source_url": source_url, "brief_text": brief_text})
 
     campaign_slug = slugify(job["campaign_title"])
-    out_dir = make_viral_clips_run(source=source_url, campaign=campaign_slug, n=3, language=job["language"])
+    style_hint = ACCOUNT_STYLE_HINTS.get(job["target_account"])
+    out_dir = make_viral_clips_run(
+        source=source_url, campaign=campaign_slug, n=3, language=job["language"], style_hint=style_hint
+    )
 
     report = json.loads((out_dir / "report.json").read_text(encoding="utf-8"))
     top = report[0]

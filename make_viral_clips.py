@@ -56,6 +56,7 @@ def run(
     whisper_model: str = "small",
     claude_model: str = DEFAULT_MODEL,
     focus_x: float = 0.5,
+    style_hint: str | None = None,
 ) -> Path:
     out_dir = REPO_ROOT / "clips" / campaign / "viral"
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -71,7 +72,7 @@ def run(
     print(f"      {len(transcript['segments'])} segments, {transcript['duration']:.1f}s")
 
     print(f"[2/4] Scoring viral moments with {claude_model}...")
-    moments = find_moments(transcript, n=n, model=claude_model, language=language)
+    moments = find_moments(transcript, n=n, model=claude_model, language=language, style_hint=style_hint)
     print(f"      {len(moments)} candidates found")
 
     print("[3/4] Rendering clips (crop + captions)...")
@@ -114,6 +115,7 @@ def main():
     ap.add_argument("--whisper-model", default="small")
     ap.add_argument("--claude-model", default=DEFAULT_MODEL)
     ap.add_argument("--focus-x", type=float, default=0.5, help="0=left, 0.5=center, 1=right crop focus")
+    ap.add_argument("--style-hint", default=None, help="Account house-style directive for hook_text (see accounts.ts)")
     args = ap.parse_args()
 
     run(
@@ -124,6 +126,7 @@ def main():
         whisper_model=args.whisper_model,
         claude_model=args.claude_model,
         focus_x=args.focus_x,
+        style_hint=args.style_hint,
     )
 
 

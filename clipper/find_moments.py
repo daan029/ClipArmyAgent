@@ -95,6 +95,7 @@ def find_moments(
     model: str = DEFAULT_MODEL,
     api_key: str | None = None,
     language: str = "nl",
+    style_hint: str | None = None,
 ) -> list[dict]:
     import anthropic
 
@@ -106,10 +107,17 @@ def find_moments(
     )
     user_prompt = f"{prompt_intro}\n\n{_transcript_to_prompt(transcript)}"
 
+    system = _system_prompt(language)
+    if style_hint:
+        # Account-level style guidance (see accounts.ts styleGuide on the creator-dashboard
+        # side) - applies mainly to hook_text, which is what ends up as the on-screen title.
+        # hook_text should vary every time but keep following this same style directive.
+        system = f"{system}\n\nHouse style for hook_text on this account:\n{style_hint}"
+
     response = client.messages.create(
         model=model,
         max_tokens=4096,
-        system=_system_prompt(language),
+        system=system,
         messages=[{"role": "user", "content": user_prompt}],
     )
     text = "".join(block.text for block in response.content if block.type == "text")
