@@ -241,6 +241,14 @@ def process_path_b(job: dict, drive_folder_url: str, brief_text: str) -> None:
     print("  needs a Claude session to pick highlights (video_analysis_create) - see build_fast_montage.py")
 
 
+# Accounts whose videos are never produced by the automatic ffmpeg pipeline below - they
+# need a real production pass (see commercial_cuts/STYLE_GUIDE.md) in a Claude session with
+# Higgsfield's sandbox_exec instead. Routing these through process_path_a/b would silently
+# generate a wrong-style video (no title card, no color grade, no brand outro) and put it
+# straight up for review looking like a normal klipje-style clip.
+MANUAL_PRODUCTION_ACCOUNTS = {"commercialcuts"}
+
+
 def process_job(job: dict) -> None:
     print(f"Job {job['id']} - {job['campaign_title']}")
     try:
@@ -252,7 +260,19 @@ def process_job(job: dict) -> None:
         drive_folder_url = find_drive_folder_url(search_text)
         source_url = find_source_url(search_text)
 
-        if source_url:
+        if job["target_account"] in MANUAL_PRODUCTION_ACCOUNTS:
+            source = source_url or drive_folder_url
+            if not source:
+                print("  no usable source found in brief - marking needs_source")
+                patch_job(job["id"], {"status": "needs_source", "brief_text": brief_text or ""})
+                return
+            print(f"  [manual production: {job['target_account']}] source={source}")
+            print("  needs a Claude session following commercial_cuts/STYLE_GUIDE.md - not auto-generating")
+            patch_job(
+                job["id"],
+                {"status": "awaiting_analysis", "source_url": source, "brief_text": brief_text or ""},
+            )
+        elif source_url:
             process_path_a(job, source_url, brief_text or "")
         elif drive_folder_url:
             process_path_b(job, drive_folder_url, brief_text or "")
