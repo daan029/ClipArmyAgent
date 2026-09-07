@@ -20,7 +20,7 @@ ScaledBorderAndShadow: yes
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
 Style: Caption,Arial Black,84,{white},{white},{black},{black},-1,0,0,0,100,100,0,0,1,6,0,2,60,60,380,1
-Style: Hook,Arial Black,104,{white},{white},{black},{black},-1,0,0,0,100,100,0,0,1,7,0,8,60,60,160,1
+Style: Hook,Segoe UI Black,100,{white},{white},{black},{black},-1,0,0,0,100,100,0,0,1,7,0,8,60,60,240,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
