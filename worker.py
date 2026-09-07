@@ -104,17 +104,40 @@ def patch_job(job_id: str, patch: dict) -> None:
     dashboard_request("PATCH", f"/api/worker/jobs/{job_id}", patch)
 
 
-def fetch_brief_text(brief_url: str) -> str | None:
+def fetch_brief(brief_url: str) -> tuple[str | None, list[str]]:
+    """Returns (plain_text, hyperlink_urls). Uses the HTML export, not the plain-text
+    export - Google Docs hyperlinks where the display text differs from the URL (e.g.
+    "B-roll Barcelona - Google Drive") have the actual URL stripped out entirely by the
+    .txt export; only the HTML export keeps the href."""
     match = GDOC_ID_PATTERN.search(brief_url)
     if not match:
-        return None
-    export_url = f"https://docs.google.com/document/d/{match.group(1)}/export?format=txt"
+        return None, []
+    export_url = f"https://docs.google.com/document/d/{match.group(1)}/export?format=html"
     try:
         with urlopen(export_url) as resp:
-            return resp.read().decode("utf-8")
+            html = resp.read().decode("utf-8")
     except HTTPError as e:
         print(f"  brief fetch failed ({e.code}) - doc may not be link-shared")
-        return None
+        return None, []
+
+    from bs4 import BeautifulSoup
+    from urllib.parse import parse_qs, urlparse
+
+    soup = BeautifulSoup(html, "html.parser")
+    text = soup.get_text("\n")
+
+    links = []
+    for a in soup.find_all("a", href=True):
+        href = a["href"]
+        parsed = urlparse(href)
+        if parsed.netloc == "www.google.com" and parsed.path == "/url":
+            # Google Docs wraps every link in a redirect/tracking URL - unwrap it.
+            real = parse_qs(parsed.query).get("q", [None])[0]
+            if real:
+                href = real
+        links.append(href)
+
+    return text, links
 
 
 def find_source_url(text: str) -> str | None:
@@ -213,8 +236,10 @@ def process_path_b(job: dict, drive_folder_url: str, brief_text: str) -> None:
 def process_job(job: dict) -> None:
     print(f"Job {job['id']} - {job['campaign_title']}")
     try:
-        brief_text = fetch_brief_text(job["brief_url"]) if job.get("brief_url") else None
-        search_text = " ".join(filter(None, [brief_text, job.get("description"), job.get("rules")]))
+        brief_text, brief_links = fetch_brief(job["brief_url"]) if job.get("brief_url") else (None, [])
+        search_text = " ".join(
+            filter(None, [brief_text, job.get("description"), job.get("rules"), *brief_links])
+        )
 
         drive_folder_url = find_drive_folder_url(search_text)
         source_url = find_source_url(search_text)

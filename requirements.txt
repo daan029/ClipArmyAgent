@@ -7,3 +7,4 @@ anthropic
 yt-dlp
 gdown
 truststore
+beautifulsoup4
