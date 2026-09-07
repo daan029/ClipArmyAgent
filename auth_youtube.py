@@ -32,7 +32,12 @@ def main():
     token_path = Path(__file__).parent / "secrets" / f"youtube_token_{args.account_name}.json"
 
     flow = InstalledAppFlow.from_client_secrets_file(str(CLIENT_SECRET_FILE), SCOPES)
-    credentials = flow.run_local_server(port=0)
+    # open_browser=False: auto-launching the system default browser is a trap when
+    # it's already logged into the wrong Google account - that session completes
+    # the flow near-instantly (no interaction needed), winning the race against
+    # the user manually opening the printed URL in an incognito window. Print-only
+    # forces the user to deliberately choose where/how they authenticate.
+    credentials = flow.run_local_server(port=0, open_browser=False)
 
     token_path.write_text(credentials.to_json())
     print(f"Saved token for '{args.account_name}' to {token_path}")
