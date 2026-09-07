@@ -7,8 +7,16 @@ import argparse
 from pathlib import Path
 
 from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
 
-SCOPES = ["https://www.googleapis.com/auth/youtube.upload"]
+SCOPES = [
+    "https://www.googleapis.com/auth/youtube.upload",
+    # readonly lets auth_youtube.py (and anything else) confirm which channel a
+    # token actually belongs to via channels().list(mine=True) - upload alone
+    # can't read anything back, so a wrong-channel pick (easy with multiple
+    # channels on one Google account) is otherwise unverifiable after the fact.
+    "https://www.googleapis.com/auth/youtube.readonly",
+]
 CLIENT_SECRET_FILE = Path(__file__).parent / "secrets" / "youtube_client_secret.json"
 
 
@@ -28,6 +36,13 @@ def main():
 
     token_path.write_text(credentials.to_json())
     print(f"Saved token for '{args.account_name}' to {token_path}")
+
+    yt = build("youtube", "v3", credentials=credentials)
+    resp = yt.channels().list(part="snippet", mine=True).execute()
+    for item in resp.get("items", []):
+        handle = item["snippet"].get("customUrl", "(no custom handle)")
+        print(f"  -> Connected channel: \"{item['snippet']['title']}\" ({handle})")
+        print(f"     Double-check this is the account you meant to connect as '{args.account_name}'.")
 
 
 if __name__ == "__main__":
