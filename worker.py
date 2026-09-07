@@ -154,15 +154,23 @@ def find_drive_folder_url(text: str) -> str | None:
 
 
 def upload_preview(job_id: str, local_path: Path) -> str:
-    # Goes through the dashboard's own worker API (POST /api/worker/jobs/[id]/upload)
-    # rather than talking to Supabase Storage directly - the worker only ever needs
-    # WORKER_API_TOKEN, never a key that can touch the rest of the database.
-    url = f"{os.environ['DASHBOARD_URL'].rstrip('/')}/api/worker/jobs/{job_id}/upload"
-    req = Request(url, data=local_path.read_bytes(), method="POST")
-    req.add_header("Authorization", f"Bearer {os.environ['WORKER_API_TOKEN']}")
-    req.add_header("Content-Type", "video/mp4")
-    with urlopen(req) as resp:
-        return json.loads(resp.read())["url"]
+    # Two steps, neither of which needs the Supabase key: ask the dashboard for a
+    # short-lived signed Storage upload URL (GET .../upload-url), then PUT the file
+    # straight to Supabase Storage. Videos routinely exceed Vercel's ~4.5MB serverless
+    # function payload limit, so streaming the body through a dashboard route (as the
+    # old single-step /upload endpoint did) breaks for anything but very short clips.
+    base = os.environ["DASHBOARD_URL"].rstrip("/")
+    sign_req = Request(f"{base}/api/worker/jobs/{job_id}/upload-url", method="GET")
+    sign_req.add_header("Authorization", f"Bearer {os.environ['WORKER_API_TOKEN']}")
+    with urlopen(sign_req) as resp:
+        signed = json.loads(resp.read())
+
+    put_req = Request(signed["upload_url"], data=local_path.read_bytes(), method="PUT")
+    put_req.add_header("Content-Type", "video/mp4")
+    with urlopen(put_req):
+        pass
+
+    return signed["public_url"]
 
 
 # Account house style for hook_text (the on-screen title). Keep in sync with the account
