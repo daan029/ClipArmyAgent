@@ -19,7 +19,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_MODEL = "claude-sonnet-5"
 
-SYSTEM_PROMPT = """Je bent een short-form video editor die lange video's doorspit op zoek naar \
+SYSTEM_PROMPT_NL = """Je bent een short-form video editor die lange video's doorspit op zoek naar \
 de meest viral-waardige momenten voor TikTok/Instagram Reels/YouTube Shorts.
 
 Je krijgt een transcript met tijdstempels per zin. Kies de beste clip-kandidaten volgens deze regels:
@@ -33,6 +33,26 @@ Je krijgt een transcript met tijdstempels per zin. Kies de beste clip-kandidaten
 Antwoord ALLEEN met geldige JSON, geen uitleg eromheen, in dit schema:
 {"clips": [{"start": 12.3, "end": 45.6, "virality_score": 82, "reason": "korte reden in het Nederlands", "hook_text": "korte pakkende hooktekst voor op het scherm"}]}
 """
+
+SYSTEM_PROMPT_EN = """You are a short-form video editor scanning long videos for the most \
+viral-worthy moments for TikTok/Instagram Reels/YouTube Shorts.
+
+You get a transcript with per-sentence timestamps. Pick the best clip candidates per these rules:
+- Each clip must stand on its own (understandable without knowing the rest of the video).
+- Needs a strong hook within the first 2-3 seconds (a question, a striking line, tension, humor).
+- Duration between 15 and 90 seconds.
+- start/end MUST exactly match a sentence boundary from the transcript (use the given
+  timestamps, never invent new ones).
+- Clips must not overlap.
+- Sort by virality_score descending (highest first).
+
+Reply with ONLY valid JSON, no surrounding explanation, in this schema:
+{"clips": [{"start": 12.3, "end": 45.6, "virality_score": 82, "reason": "short reason in English", "hook_text": "short punchy on-screen hook text"}]}
+"""
+
+
+def _system_prompt(language: str) -> str:
+    return SYSTEM_PROMPT_NL if language == "nl" else SYSTEM_PROMPT_EN
 
 
 def _get_api_key() -> str:
@@ -74,19 +94,22 @@ def find_moments(
     n: int = 5,
     model: str = DEFAULT_MODEL,
     api_key: str | None = None,
+    language: str = "nl",
 ) -> list[dict]:
     import anthropic
 
     client = anthropic.Anthropic(api_key=api_key or _get_api_key())
-    user_prompt = (
-        f"Kies de {n} beste clip-kandidaten uit dit transcript "
-        f"(video-duur: {transcript['duration']:.1f}s):\n\n{_transcript_to_prompt(transcript)}"
+    prompt_intro = (
+        f"Kies de {n} beste clip-kandidaten uit dit transcript (video-duur: {transcript['duration']:.1f}s):"
+        if language == "nl"
+        else f"Pick the {n} best clip candidates from this transcript (video duration: {transcript['duration']:.1f}s):"
     )
+    user_prompt = f"{prompt_intro}\n\n{_transcript_to_prompt(transcript)}"
 
     response = client.messages.create(
         model=model,
         max_tokens=4096,
-        system=SYSTEM_PROMPT,
+        system=_system_prompt(language),
         messages=[{"role": "user", "content": user_prompt}],
     )
     text = "".join(block.text for block in response.content if block.type == "text")
@@ -102,11 +125,12 @@ def main():
     ap.add_argument("--transcript", required=True)
     ap.add_argument("--n", type=int, default=5)
     ap.add_argument("--model", default=DEFAULT_MODEL)
+    ap.add_argument("--language", default="nl", help="'nl' or 'en' - controls the prompt/output language")
     ap.add_argument("--out", required=True)
     args = ap.parse_args()
 
     transcript = json.loads(Path(args.transcript).read_text(encoding="utf-8"))
-    moments = find_moments(transcript, n=args.n, model=args.model)
+    moments = find_moments(transcript, n=args.n, model=args.model, language=args.language)
     Path(args.out).write_text(json.dumps(moments, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"Found {len(moments)} moments -> {args.out}")
     for i, m in enumerate(moments, 1):

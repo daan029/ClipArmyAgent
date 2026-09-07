@@ -71,7 +71,7 @@ def run(
     print(f"      {len(transcript['segments'])} segments, {transcript['duration']:.1f}s")
 
     print(f"[2/4] Scoring viral moments with {claude_model}...")
-    moments = find_moments(transcript, n=n, model=claude_model)
+    moments = find_moments(transcript, n=n, model=claude_model, language=language)
     print(f"      {len(moments)} candidates found")
 
     print("[3/4] Rendering clips (crop + captions)...")
