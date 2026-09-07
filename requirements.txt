@@ -5,3 +5,5 @@ Pillow
 faster-whisper
 anthropic
 yt-dlp
+gdown
+truststore
