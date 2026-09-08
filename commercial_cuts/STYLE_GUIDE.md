@@ -1,10 +1,13 @@
 # Commercial Cuts — production style guide
 
-Read this before making any video for the Commercial Cuts YouTube/TikTok account. It's the
-fixed house style — every video follows this structure and these rules so the channel builds
-a consistent, recognizable identity, the way a real ad agency's reel would. Pairs with
-`template.edit.jsx` in this folder (the executable version of this guide, built for
-Higgsfield's `higgsedit` — run inside a Claude session with `sandbox_exec`, not locally).
+Read `MASTER_PROMPT.md` in this folder FIRST — it's the full creative-direction brief (role,
+story structure, hard 20-30s duration rule, editing craft, YouTube-safe music licensing) that
+Daan set as the permanent standard for this account on 2026-09-07. This file is the
+Commercial-Cuts-specific brand layer on top of it: exact caption formula, logo, color grade,
+brand assets. Read both before making any video for the Commercial Cuts YouTube/TikTok
+account. Pairs with `template.edit.jsx` in this folder (the executable version of both docs,
+built for Higgsfield's `higgsedit` — run inside a Claude session with `sandbox_exec`, not
+locally).
 
 ## Concept
 
@@ -136,13 +139,51 @@ that separates "professional" from "raw clip."
 ## Technical spec
 
 - Vertical, `1080x1920`, `30fps` — TikTok and YouTube Shorts both want this.
-- Runtime: 15–45s, driven by how much usable footage the campaign actually has. Never pad
-  with slow-motion or repeated shots just to hit a target length.
-- Audio: keep the original clip audio as ambient bed under the montage (lightly ducked, not
-  muted — see `worker.py`'s ffmpeg `loudnorm` pattern for one precedent on fixing a video
-  whose audio was too quiet to notice at all). Add trending TikTok sound only if it doesn't
-  fight the footage's own ambient sound — Commercial Cuts is not TripHunters; leaning on a
-  trending-audio hook is not house style here the way it is for TripHunters.
+- Runtime: **20-30s, hard requirement, target ~25s** (superseded 2026-09-07 by
+  `MASTER_PROMPT.md` section 2 — this used to say "15-45s, driven by footage," which is no
+  longer correct; the master prompt's range is authoritative now). If a campaign is short on
+  usable footage, use longer hero shots / subtler push-ins per MASTER_PROMPT.md section 37 —
+  never pad with slow-motion loops or obvious repeated shots.
+- Audio — **real music bed with beat-synced cuts, not optional.** Rejected once already
+  (2026-09-07 Barcelona video) for having no transitions, then flagged again (2026-09-08) for
+  having no music at all despite `MASTER_PROMPT.md` sections 9-11 already specifying this in
+  detail — the gap was pure execution, not missing spec. The real workflow, validated
+  2026-09-08 (see `beat_sync.py` in this folder):
+  1. **Source a track** from incompetech.com (Kevin MacLeod, CC BY 4.0/3.0 — verified directly
+     downloadable with no login, e.g. `curl -o track.mp3
+     "https://incompetech.com/music/royalty-free/mp3-royaltyfree/<Track%20Name>.mp3"`). Pick a
+     track matching `MASTER_PROMPT.md` section 10's mood table for the subject (museum →
+     cinematic/sophisticated). This is safer than TikTok's Commercial Music Library for this
+     account specifically — that license doesn't extend to YouTube, and Commercial Cuts posts
+     to both platforms with the same file, unlike TripHunters which can attach a
+     TikTok-exclusive sound at publish time and skip music on YouTube (see
+     `feedback-triphunters-music-at-publish-not-baked-in` in the auto-memory system — that
+     account's approach doesn't apply here). Log the track title/artist/license (attribution
+     text) in the video description per `MASTER_PROMPT.md` section 10a.
+  2. **Run `beat_sync.py`** (`pip install librosa` first, not a standing dependency) against the
+     track to get beat-aligned `CONFIG.clips` durations: `python beat_sync.py --music track.mp3
+     --target-duration <body seconds> --clips <n> --hero-indices <comma-separated indices>`.
+     Mark 1-2 clips as hero/establishing shots by hand (the strongest visuals, per section 4's
+     scoring) so they get a generous duration cap instead of the tight ~2.8s default every other
+     clip gets — this is what makes the pacing feel edited rather than uniform, and is required
+     when a campaign only has a handful of pre-vetted clips to fill 20-30s with (true so far for
+     every real campaign this account has run).
+  3. Plug the printed durations into `template.edit.jsx`'s `CONFIG.clips`, run the higgsedit
+     build exactly as before — **no music inside higgsedit itself**, it has no
+     second-audio-track support (see `references/assembly.md` in the `video-editing` Higgsfield
+     workflow: "An audio clip cannot share a track with visual clips ... mix with ffmpeg").
+  4. **Mix the music in as a post-render ffmpeg step** (same place the AAC re-mux already
+     happens) using the command `beat_sync.py` prints. Two real, silent-failure bugs to not
+     repeat: (a) explicit `aformat=sample_rates=...` on BOTH the render's audio and the music
+     input, or a sample-rate mismatch (higgsedit renders at 96kHz, most mp3s are 44.1kHz) makes
+     `amix` silently drop the music track entirely with no error; (b) `amix ... normalize=0`, or
+     the original ambient track gets auto-ducked too and the whole mix reads as barely louder
+     than before. Tune the music volume by ear via `ffmpeg -af volumedetect` deltas in a quiet
+     window of the clip, not by guessing — a ~2dB peak bump was inaudible in practice, a ~4dB+
+     mean-volume bump in a quiet window was what actually registered as "there's music now."
+  5. Keep the original clip audio as the ambient layer underneath the music (not muted) —
+     `worker.py`'s `loudnorm=I=-14:TP=-1.5:LRA=11` pattern is the precedent for normalizing it
+     first if it's too quiet to register at all.
 
 ## What this is NOT
 

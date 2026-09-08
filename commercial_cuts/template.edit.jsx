@@ -43,6 +43,17 @@
 // 3. `<text>` has no `stroke` object prop - build fails hard with "'stroke' is not a text field".
 //    Use flat `strokeColor`/`strokeWidth` instead (references/caption-titling.md "Appearance").
 //
+// REVISION 2026-09-08 — STILL NOT A COMPLETE COMMERCIAL: rejected again for having no music
+// bed at all, cuts not synced to any beat, despite MASTER_PROMPT.md sections 9-11 already
+// specifying this. This was pure execution gap, not missing spec - don't let it happen again.
+// CONFIG.clips durations below should come from `beat_sync.py` (same folder), NOT be picked
+// "by feel" - see STYLE_GUIDE.md's Audio section for the full workflow (source a track from
+// incompetech.com, run beat_sync.py for beat-aligned durations + a hero-shot duration cap, mix
+// the music in as a POST-render ffmpeg step since higgsedit has no second-audio-track support).
+// This file's CONFIG has no `music` field yet because it was never actually run against a real
+// job with this workflow - add one (file + attribution + start-offset-in-track) the next time
+// this template is used for real, and don't ship without actually running beat_sync.py first.
+//
 // Before running, for every clip in CONFIG.clips, pre-extract its audio once with ffmpeg —
 // higgsedit's <media> node draws picture only, sound is a separate spine clip kept in sync
 // via the same sourceStart offset (see SKILL.md "Footage inside a design"). Extract to a REAL
