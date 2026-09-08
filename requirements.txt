@@ -8,3 +8,5 @@ yt-dlp
 gdown
 truststore
 beautifulsoup4
+requests
+librosa
