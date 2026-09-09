@@ -20,6 +20,11 @@ $50k agency spot" is the entire hook.
 
 ## Caption / title formula (fixed, every video)
 
+**Never put music track/artist/license info in the public caption or video description**
+(added 2026-09-08, Daan's explicit correction - it measurably hurts performance). Track
+title/artist/license belongs only in the job's internal `description` field or code comments -
+see MASTER_PROMPT.md's music-licensing section. The public caption is ONLY the formula below.
+
 On-screen title card text AND the social caption/description both follow this exact pattern:
 
 ```

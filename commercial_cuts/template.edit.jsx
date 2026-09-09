@@ -159,29 +159,41 @@ export default async function edit({ project }) {
   );
 
   // ---- Beat 2a: title-card scrim, its OWN compose call - never a flex child of the text
-  // column (see bug #2 above: a rect child in a <column> gets flowed, not just painted behind). ----
+  // column (see bug #2 above: a rect child in a <column> gets flowed, not just painted behind).
+  // CHANGED 2026-09-08 (Daan feedback: put the title text centered in frame, not lower-third -
+  // "ziet er mooier uit en is duidelijker leesbaar"): scrim is now a vertically-centered band
+  // with a symmetric fade (transparent -> dark -> transparent) instead of a bottom-anchored
+  // one-directional gradient, since it no longer sits against an edge. ----
+  const TITLE_BAND_HEIGHT = 760;
   p.compose(
     <rect
       x={0}
-      y={H - 670}
+      y={(H - TITLE_BAND_HEIGHT) / 2}
       width={W}
-      height={670}
+      height={TITLE_BAND_HEIGHT}
       fill={{
         kind: "linear",
         angle: 90,
         stops: [
           { offset: 0, color: "rgba(0,0,0,0)" },
-          { offset: 1, color: "rgba(0,0,0,0.72)" },
+          { offset: 0.18, color: "rgba(0,0,0,0.6)" },
+          { offset: 0.82, color: "rgba(0,0,0,0.6)" },
+          { offset: 1, color: "rgba(0,0,0,0)" },
         ],
       }}
     />,
     { at: 0, dur: TITLE_CARD_DUR, name: "title-scrim" },
   );
 
-  // ---- Beat 2b: the title text itself, composed on top of the scrim ----
+  // ---- Beat 2b: the title text itself, composed on top of the scrim - centered both
+  // horizontally (align="center" on each <text>, block itself is horizontally centered by
+  // the x/width) and vertically (column's y is the frame's vertical center, offset up by
+  // roughly half the block's expected height so it reads as centered, not just top-anchored
+  // at the midpoint). ----
   p.compose(
-    <column x={80} y={H - 560} width={W - 160} gap={16}>
+    <column x={80} y={H / 2 - 150} width={W - 160} gap={16} alignItems="center">
       <text
+        align="center"
         fontFamily={TITLE_FONT}
         fontSize={80}
         color="#FFFFFF"
@@ -194,6 +206,7 @@ export default async function edit({ project }) {
       </text>
       {CONFIG.useAiTag && (
         <text
+          align="center"
           fontFamily={BODY_FONT}
           fontWeight={600}
           fontSize={40}
