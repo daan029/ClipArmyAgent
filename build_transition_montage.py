@@ -28,7 +28,7 @@ CANVAS_W, CANVAS_H = 1080, 1920
 DEFAULT_TRANSITIONS = ["fadewhite", "zoomin", "smoothleft", "circlecrop", "fadewhite", "smoothright"]
 
 WHITE = "&H00FFFFFF&"
-NAVY_BG = "&H004E2B09&"  # Klipje brand navy #092B4E, BGR order for ASS
+BLACK = "&H00000000&"
 
 TITLE_ASS_TEMPLATE = """[Script Info]
 ScriptType: v4.00+
@@ -39,8 +39,8 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: TitleBar,Arial Black,64,{white},{white},{navy},{navy},-1,0,0,0,100,100,0,0,3,24,0,8,40,40,140,1
-Style: TitleSub,Arial,44,{white},{white},{navy},{navy},0,0,0,0,100,100,0,0,3,18,0,8,40,40,60,1
+Style: TitleBar,Arial Black,64,{text},{text},{bg},{bg},-1,0,0,0,100,100,0,0,3,24,0,8,40,40,140,1
+Style: TitleSub,Arial,44,{text},{text},{bg},{bg},0,0,0,0,100,100,0,0,3,18,0,8,40,40,60,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -116,7 +116,7 @@ def build_transition_montage(
             ass_path = tmp / "title.ass"
             ass_path.write_text(
                 TITLE_ASS_TEMPLATE.format(
-                    w=CANVAS_W, h=CANVAS_H, white=WHITE, navy=NAVY_BG,
+                    w=CANVAS_W, h=CANVAS_H, text=BLACK, bg=WHITE,
                     end=_fmt_time(title_duration),
                     line1=title_line1.replace("{", "").replace("}", ""),
                     line2=(title_line2 or "").replace("{", "").replace("}", ""),
