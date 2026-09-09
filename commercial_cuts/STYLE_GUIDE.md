@@ -89,9 +89,12 @@ is where 80%+ of the runtime lives. Rules:
 
 - **Global color grade** applies here (and for the whole video — see Color grade below), not
   per-clip. Consistency across cuts is what reads as "graded," not "filtered."
-- At most **one** lower-third/context label in this section (e.g. "MOCO MUSEUM — BARCELONA"),
-  using the **calm title landing** rule: one restrained entrance, long hold, no secondary
-  motion competing with it. Skip it entirely if the subject is already obvious from the
+- At most **one** context label in this section (e.g. "MOCO MUSEUM — BARCELONA") — **CORRECTED
+  2026-09-09: center it vertically in frame, not lower-third.** Daan's standing preference
+  (already applied to the Beat 2 title card, now generalized to all on-screen text on this
+  account, including body/trailer text stamps in any experimental format) is that centered
+  text reads better and is more legible than text anchored to an edge — "spreekt meer aan."
+  Use the **calm title landing** rule: one restrained entrance, long hold, no secondary
   footage — don't force a label onto every video.
 - Cut duration per shot: no shot longer than ~2.5s in the body unless it's the establishing
   or hero shot. Faster cutting reads as more "commercial," slower reads as amateur B-roll.
@@ -102,12 +105,21 @@ is where 80%+ of the runtime lives. Rules:
 
 ### Beat 4 — Brand outro (final 3s)
 
-**Logo assemble and lockup** blueprint. The Commercial Cuts mark (the gold interlocking-C
-logo, see brand assets below) assembles/springs into frame center — never a plain fade-in,
-the logo should look like it's *forming*, not appearing. Wordmark "COMMERCIAL CUTS" lands
-underneath via word cascade, small tracking-heavy caption weight. Final lockup (logo +
-wordmark together) holds for the last ~1s — this is the frame the platform freezes on for
-scrubbing/thumbnails, so it must be clean and centered.
+**CORRECTED 2026-09-09 (Daan, standing rule from now on):** the outro closes on **the video's
+subject** (the client/venue being featured — e.g. "MOCO MUSEUM LONDON"), **not** on the
+Commercial Cuts brand itself. Commercial Cuts is the agency making the spot, not what the spot
+is advertising — a real commercial ends on the client's name, the same way this account's
+videos should. Show the subject's name (and its handle, e.g. "@MocoMuseum", if there is one)
+as the hero text of this beat, gold/white on the charcoal ground. The Commercial Cuts mark can
+still appear somewhere in the edit (e.g. a small opening "COMMERCIAL CUTS PRESENTS" card) but
+must not be the thing the video closes on.
+
+The previous spec (kept here for context, superseded by the above): **Logo assemble and
+lockup** blueprint — the Commercial Cuts mark (the gold interlocking-C logo, see brand assets
+below) assembles/springs into frame center, wordmark "COMMERCIAL CUTS" lands underneath via
+word cascade. Final lockup holds for the last ~1s — this is the frame the platform freezes on
+for scrubbing/thumbnails, so whatever it shows (now: the subject, not the CC mark) must be
+clean and centered.
 
 ### Beat 5 — Final hold
 
