@@ -80,13 +80,33 @@ const CONFIG = {
   // available footage as generous hero/discovery shots rather than being padded or repeated —
   // MASTER_PROMPT.md rule 37). transition is on the OUTGOING edge of this clip (into the next);
   // the last clip has none (it cuts into the separate outro beat with its own fade-in instead).
+  // Tried beat-syncing durations via `beat_sync.py --music music/echoes_of_time.mp3
+  // --target-duration 21.3 --clips 6 --hero-indices 0,1,3 --seed 7` (2026-09-09), but the
+  // suggested durations for clip_01/03/04/05 EXCEEDED those clips' actual available footage
+  // (e.g. clip_01_audio.mp3 is only 4.80s, beat_sync suggested 5.32s) - this campaign's 6
+  // pre-vetted clips are already cut close to their real length limit (see the original
+  // 2026-09-08 comment below), so footage availability is the binding constraint here, not the
+  // beat grid. Kept the original footage-capped durations and instead picked the MUSIC START
+  // OFFSET so the track's groove lines up reasonably with the cut rhythm, rather than forcing
+  // clip durations that don't exist. Track: "Echoes of Time" by Kevin MacLeod (incompetech.com,
+  // YouTube Audio Library style-example match for MUSEUM/CULTURE per MASTER_PROMPT.md section
+  // 10) - attribution logged HERE and in the job's internal description field only, never in
+  // the public caption per section 10a.
+  //
+  // Original 2026-09-08 comment: dur/kenBurns are chosen per clip, not uniform -
+  // MASTER_PROMPT.md's "editing rhythm" rule (vary shot duration, don't give every shot the
+  // same length) and its 20-30s hard runtime floor (this campaign only has 6 pre-vetted clips,
+  // so clip_00/01/03 use most of their real available footage as generous hero/discovery shots
+  // rather than being padded or repeated - MASTER_PROMPT.md rule 37). transition is on the
+  // OUTGOING edge of this clip (into the next); the last clip has none (it cuts into the
+  // separate outro beat with its own fade-in instead).
   clips: [
     { video: "media/clip_00.mp4", audio: "media/clip_00_audio.mp3", sourceStart: 0, dur: 6.6, kenBurns: { from: 1.0, to: 1.1 }, transition: { preset: "fade", duration: 0.45 } },
-    { video: "media/clip_01.mp4", audio: "media/clip_01_audio.mp3", sourceStart: 0, dur: 4.8, kenBurns: { from: 1.08, to: 1.0 }, transition: { preset: "grow", duration: 0.35 } },
-    { video: "media/clip_02.mp4", audio: "media/clip_02_audio.mp3", sourceStart: 0, dur: 2.9, kenBurns: { from: 1.0, to: 1.07 }, transition: { preset: "slide-left", duration: 0.35 } },
-    { video: "media/clip_03.mp4", audio: "media/clip_03_audio.mp3", sourceStart: 0, dur: 4.3, kenBurns: { from: 1.07, to: 1.0 }, transition: { preset: "grow", duration: 0.3 } },
-    { video: "media/clip_04.mp4", audio: "media/clip_04_audio.mp3", sourceStart: 0, dur: 1.12, kenBurns: { from: 1.0, to: 1.06 }, transition: { preset: "fade", duration: 0.3 } },
-    { video: "media/clip_05.mp4", audio: "media/clip_05_audio.mp3", sourceStart: 0, dur: 1.59, kenBurns: { from: 1.0, to: 1.14 }, transition: null },
+    { video: "media/clip_01.mp4", audio: "media/clip_01_audio.mp3", sourceStart: 0, dur: 4.75, kenBurns: { from: 1.08, to: 1.0 }, transition: { preset: "grow", duration: 0.35 } },
+    { video: "media/clip_02.mp4", audio: "media/clip_02_audio.mp3", sourceStart: 0, dur: 2.85, kenBurns: { from: 1.0, to: 1.07 }, transition: { preset: "slide-left", duration: 0.35 } },
+    { video: "media/clip_03.mp4", audio: "media/clip_03_audio.mp3", sourceStart: 0, dur: 4.28, kenBurns: { from: 1.07, to: 1.0 }, transition: { preset: "grow", duration: 0.3 } },
+    { video: "media/clip_04.mp4", audio: "media/clip_04_audio.mp3", sourceStart: 0, dur: 1.1, kenBurns: { from: 1.0, to: 1.06 }, transition: { preset: "fade", duration: 0.3 } },
+    { video: "media/clip_05.mp4", audio: "media/clip_05_audio.mp3", sourceStart: 0, dur: 1.55, kenBurns: { from: 1.0, to: 1.14 }, transition: null },
     // ...one entry per clip used in the montage. sourceStart is seconds into that clip's own
     // file - 0 if you pre-trimmed each clip to just its used segment (simplest), or the real
     // in-clip offset if you imported longer source files directly.
@@ -191,7 +211,7 @@ export default async function edit({ project }) {
   // roughly half the block's expected height so it reads as centered, not just top-anchored
   // at the midpoint). ----
   p.compose(
-    <column x={80} y={H / 2 - 150} width={W - 160} gap={16} alignItems="center">
+    <column x={80} y={H / 2 - 150} width={W - 160} gap={16} align="center">
       <text
         align="center"
         fontFamily={TITLE_FONT}
